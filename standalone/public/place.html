@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Place · TravelBharat</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <header></header>
+  <div class="page-hero" id="placeHero">
+    <div class="ph-inner">
+      <a class="back-link" href="javascript:history.back()">← Back</a>
+      <span class="tag" id="placeCategory"></span>
+      <h1 id="placeName" style="margin-top:8px">…</h1>
+      <div style="opacity:.9;margin-top:6px" id="placeCity"></div>
+    </div>
+  </div>
+  <section class="container">
+    <div style="display:grid;gap:30px;grid-template-columns:1.2fr 1fr;align-items:start" id="placeGrid">
+      <div>
+        <p style="color:var(--muted-ink);font-size:1.05rem" id="placeDesc"></p>
+        <div class="info-grid" id="infoGrid"></div>
+      </div>
+      <div>
+        <h3 class="display" style="font-size:1.4rem;margin-bottom:10px">📍 Get there</h3>
+        <p style="color:var(--muted-ink);font-size:.9rem;margin-bottom:14px">Enter your starting point — we'll show the route on Google Maps.</p>
+        <form id="dirForm" style="background:#fff;padding:18px;border-radius:14px;box-shadow:var(--shadow-card)">
+          <div class="field"><label>From</label><input id="from" class="input" required placeholder="e.g. Delhi" /></div>
+          <div class="field"><label>To (destination)</label><input id="to" class="input" readonly /></div>
+          <button class="btn btn-primary" style="width:100%" type="submit">Show Route on Map 🗺️</button>
+        </form>
+        <div id="dirMap" style="margin-top:16px;border-radius:14px;overflow:hidden;display:none"></div>
+      </div>
+    </div>
+
+    <div style="margin-top:50px">
+      <div class="eyebrow">Around this place</div>
+      <h2 class="display" style="font-size:1.8rem;margin-bottom:6px">Nearby attractions on Google Maps</h2>
+      <p style="color:var(--muted-ink);font-size:.95rem;margin-bottom:16px">Live results from Google Maps showing tourist spots, restaurants and landmarks around the destination.</p>
+      <div id="nearbyMap" style="border-radius:14px;overflow:hidden;box-shadow:var(--shadow-card)"></div>
+      <a id="nearbyOpen" href="#" target="_blank" class="btn btn-outline" style="display:inline-block;margin-top:12px">Open nearby search in Google Maps ↗</a>
+    </div>
+  </section>
+  <script src="/js/app.js"></script>
+  <script>
+    tb.renderNavbar('header'); tb.renderFooter('body');
+    (async () => {
+      const id = tb.qs('id');
+      if (!id) return location.href = '/';
+      const p = await tb.api(`/api/places/${id}`);
+      document.title = `${p.name} · TravelBharat`;
+      document.getElementById('placeHero').style.backgroundImage = `url('${p.image}')`;
+      document.getElementById('placeCategory').textContent = p.category;
+      document.getElementById('placeName').textContent = p.name;
+      document.getElementById('placeCity').textContent = `📍 ${p.city}`;
+      document.getElementById('placeDesc').textContent = p.description;
+      document.getElementById('to').value = p.destination || `${p.name}, ${p.city}`;
+
+      const info = [
+        ['Best Time', p.bestTime], ['Timings', p.timing], ['Entry Fee', p.entry], ['Nearby', p.nearby],
+      ];
+      const ig = document.getElementById('infoGrid');
+      info.forEach(([l, v]) => {
+        if (!v) return;
+        const cell = tb.el('div', { class: 'info-cell' });
+        cell.innerHTML = `<div class="label">${l}</div><div class="value">${v}</div>`;
+        ig.appendChild(cell);
+      });
+
+      document.getElementById('dirForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const from = document.getElementById('from').value.trim();
+        const to = document.getElementById('to').value.trim();
+        const embed = `https://www.google.com/maps?output=embed&saddr=${encodeURIComponent(from)}&daddr=${encodeURIComponent(to)}`;
+        const open = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(from)}&destination=${encodeURIComponent(to)}&travelmode=driving`;
+        const box = document.getElementById('dirMap');
+        box.style.display = 'block';
+        box.innerHTML = `
+          <iframe src="${embed}" style="width:100%;height:340px;border:0" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+          <a href="${open}" target="_blank" class="btn btn-outline" style="display:block;text-align:center;margin-top:10px">Open full route in Google Maps ↗</a>`;
+      });
+
+      // ───── Nearby attractions via Google Maps ─────
+      const dest = p.destination || `${p.name}, ${p.city}`;
+      const nearbyQuery = `tourist attractions near ${dest}`;
+      const nearbyEmbed = `https://www.google.com/maps?output=embed&q=${encodeURIComponent(nearbyQuery)}&z=13`;
+      const nearbyOpen = `https://www.google.com/maps/search/${encodeURIComponent(nearbyQuery)}`;
+      document.getElementById('nearbyMap').innerHTML =
+        `<iframe src="${nearbyEmbed}" style="width:100%;height:420px;border:0" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>`;
+      document.getElementById('nearbyOpen').href = nearbyOpen;
+    })().catch(e => tb.toast(e.message, 'error'));
+  </script>
+</body>
+</html>

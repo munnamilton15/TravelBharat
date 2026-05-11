@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Category · TravelBharat</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <header></header>
+  <section class="container" style="padding-top:50px">
+    <a class="back-link" href="/" style="color:var(--saffron)">← Back to Home</a>
+    <div class="eyebrow" id="catEyebrow" style="margin-top:12px"></div>
+    <h1 class="display" style="font-size:2.4rem" id="catName"></h1>
+    <p style="color:var(--muted-ink);max-width:680px;margin-bottom:30px" id="catDesc"></p>
+    <div class="grid" id="catGrid"></div>
+  </section>
+  <script src="/js/app.js"></script>
+  <script>
+    tb.renderNavbar('header'); tb.renderFooter('body');
+    (async () => {
+      const slug = tb.qs('slug') || 'Heritage';
+      const cats = await tb.api('/api/categories');
+      const cat = cats.find(c => c.slug === slug) || cats[0];
+      document.title = `${cat.name} · TravelBharat`;
+      document.getElementById('catEyebrow').textContent = cat.count;
+      document.getElementById('catName').textContent = cat.name;
+      document.getElementById('catDesc').textContent = cat.description;
+      const places = await tb.api(`/api/places?category=${encodeURIComponent(slug)}`);
+      const grid = document.getElementById('catGrid');
+      if (!places.length) { grid.innerHTML = '<div class="empty-hint">No places in this category yet.</div>'; return; }
+      places.forEach((p) => {
+        grid.appendChild(tb.el('a', { class: 'card', href: `/place.html?id=${p.id}` },
+          tb.el('div', { class: 'card-img' }, tb.el('img', { src: p.image, alt: p.name, loading: 'lazy' })),
+          tb.el('div', { class: 'card-body' },
+            tb.el('h3', {}, p.name),
+            tb.el('div', { class: 'meta' }, `📍 ${p.city}`),
+            tb.el('p', {}, p.description)
+          )
+        ));
+      });
+    })().catch(e => tb.toast(e.message, 'error'));
+  </script>
+</body>
+</html>

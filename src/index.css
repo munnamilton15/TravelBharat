@@ -1,0 +1,63 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* TravelBharat design system — saffron / cream / ink */
+
+@layer base {
+  :root {
+    --background: 35 100% 97%;
+    --foreground: 30 60% 7%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 30 60% 7%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 30 60% 7%;
+
+    --primary: 17 100% 60%;          /* saffron #FF6B35 */
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 39 89% 56%;         /* gold #F4A528 */
+    --secondary-foreground: 30 60% 7%;
+
+    --muted: 35 40% 92%;
+    --muted-foreground: 28 16% 37%;  /* #6B5B4E */
+
+    --accent: 17 100% 60%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 68% 32%;        /* maroon #8B1A1A */
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 17 100% 60% / 0.2;
+    --input: 17 100% 90%;
+    --ring: 17 100% 60%;
+
+    --saffron: 17 100% 60%;
+    --deep-saffron: 18 96% 46%;
+    --gold: 39 89% 56%;
+    --cream: 35 100% 97%;
+    --ink: 30 60% 7%;
+    --muted-ink: 28 16% 37%;
+    --green-india: 152 41% 30%;
+
+    --radius: 0.75rem;
+
+    --gradient-saffron: linear-gradient(135deg, hsl(17 100% 60%), hsl(39 89% 56%));
+    --gradient-overlay: linear-gradient(to top, hsl(30 60% 7% / 0.9), transparent);
+    --shadow-warm: 0 10px 40px hsl(17 100% 60% / 0.15);
+    --shadow-card: 0 8px 30px hsl(30 60% 7% / 0.08);
+  }
+}
+
+@layer base {
+  * { @apply border-border; }
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'DM Sans', sans-serif;
+  }
+  h1, h2, h3, .font-display {
+    font-family: 'Cormorant Garamond', serif;
+  }
+}

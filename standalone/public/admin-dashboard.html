@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Admin Dashboard · TravelBharat</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <header></header>
+  <main class="container" style="padding:40px 5%">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:16px">
+      <h1 class="display" style="font-size:2.2rem">Admin Dashboard</h1>
+      <button class="btn btn-outline" onclick="localStorage.removeItem('tb_token');location.href='/admin-login.html'">Logout</button>
+    </div>
+    <div class="tabs">
+      <button class="tab active" data-tab="places">Manage Places</button>
+      <button class="tab" data-tab="experiences">User Experiences</button>
+    </div>
+
+    <!-- PLACES -->
+    <div id="tab-places">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+        <h2 class="display" style="font-size:1.4rem" id="placesCount">Places</h2>
+        <button class="btn btn-primary" onclick="openModal()">+ Add New Place</button>
+      </div>
+      <div style="overflow-x:auto">
+        <table class="admin-table">
+          <thead><tr><th>Image</th><th>Name</th><th>State</th><th>Category</th><th>Actions</th></tr></thead>
+          <tbody id="placesBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- EXPERIENCES -->
+    <div id="tab-experiences" style="display:none">
+      <h2 class="display" style="font-size:1.4rem;margin-bottom:14px" id="expCount">Experiences</h2>
+      <div id="expBody" style="display:grid;gap:12px"></div>
+    </div>
+  </main>
+
+  <div id="modal" style="display:none"></div>
+  <script src="/js/app.js"></script>
+  <script>
+    if (!localStorage.getItem('tb_token')) location.href = '/admin-login.html';
+    tb.renderNavbar('header'); tb.renderFooter('body');
+
+    document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+      t.classList.add('active');
+      document.getElementById('tab-places').style.display = t.dataset.tab === 'places' ? '' : 'none';
+      document.getElementById('tab-experiences').style.display = t.dataset.tab === 'experiences' ? '' : 'none';
+    }));
+
+    let editing = null;
+    async function loadPlaces() {
+      const items = await tb.api('/api/places');
+      document.getElementById('placesCount').textContent = `Places (${items.length})`;
+      const tbody = document.getElementById('placesBody');
+      tbody.innerHTML = '';
+      items.forEach(p => {
+        const tr = tb.el('tr');
+        tr.innerHTML = `
+          <td><img src="${p.image}" alt=""></td>
+          <td style="font-weight:600">${p.name}</td>
+          <td style="color:var(--muted-ink)">${p.stateSlug}</td>
+          <td style="color:var(--muted-ink)">${p.category}</td>
+          <td>
+            <button class="btn btn-ghost" style="padding:6px 12px;font-size:.78rem" data-edit="${p.id}">Edit</button>
+            <button class="btn" style="padding:6px 12px;font-size:.78rem;background:var(--destructive);color:#fff" data-del="${p.id}">Delete</button>
+          </td>`;
+        tr.querySelector('[data-edit]').onclick = () => openModal(p);
+        tr.querySelector('[data-del]').onclick = async () => {
+          if (!confirm('Delete this place?')) return;
+          await tb.api('/api/places/' + p.id, { method: 'DELETE' });
+          tb.toast('Deleted'); loadPlaces();
+        };
+        tbody.appendChild(tr);
+      });
+    }
+    async function loadExp() {
+      const items = await tb.api('/api/experiences');
+      document.getElementById('expCount').textContent = `User Experiences (${items.length})`;
+      const box = document.getElementById('expBody');
+      box.innerHTML = '';
+      if (!items.length) { box.innerHTML = '<div class="empty-hint">No community posts yet.</div>'; return; }
+      items.forEach(e => {
+        const card = tb.el('div', { style: 'background:#fff;padding:16px;border-radius:12px;box-shadow:var(--shadow-card);display:flex;gap:14px;align-items:flex-start' });
+        if (e.imageUrl) card.appendChild(tb.el('img', { src: e.imageUrl, style: 'width:64px;height:64px;border-radius:8px;object-fit:cover' }));
+        const body = tb.el('div', { style: 'flex:1' });
+        body.innerHTML = `<div style="font-weight:700">${e.userName}</div><div style="font-size:.88rem;color:var(--muted-ink);margin-top:4px">"${e.content}"</div>`;
+        card.appendChild(body);
+        const del = tb.el('button', { class: 'btn', style: 'padding:6px 12px;font-size:.78rem;background:var(--destructive);color:#fff' }, 'Remove');
+        del.onclick = async () => {
+          if (!confirm('Remove?')) return;
+          await tb.api('/api/experiences/' + e._id, { method: 'DELETE' });
+          loadExp();
+        };
+        card.appendChild(del);
+        box.appendChild(card);
+      });
+    }
+    loadPlaces(); loadExp();
+
+    let stateOptions = [], categoryOptions = [];
+    async function ensureOptions() {
+      if (!stateOptions.length) stateOptions = await tb.api('/api/states');
+      if (!categoryOptions.length) categoryOptions = await tb.api('/api/categories');
+    }
+
+    async function openModal(place) {
+      await ensureOptions();
+      editing = place || null;
+      const p = place || { id:'', name:'', stateSlug:'', city:'', category:'', image:'', description:'', bestTime:'', timing:'', entry:'', nearby:'', destination:'' };
+      const textFields = ['id','name','city','image','destination','bestTime','timing','entry','nearby'];
+      const m = document.getElementById('modal');
+      m.style.display = '';
+      m.className = 'modal-bg';
+      const stateOpts = stateOptions.map(s => `<option value="${s.slug}" ${s.slug===p.stateSlug?'selected':''}>${s.name}</option>`).join('');
+      const catOpts = categoryOptions.map(c => `<option value="${c.slug}" ${c.slug===p.category?'selected':''}>${c.name}</option>`).join('');
+      m.innerHTML = `
+        <form class="modal" id="placeForm">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+            <h3 class="display" style="font-size:1.4rem">${editing ? 'Edit Place' : 'Add New Place'}</h3>
+            <button type="button" style="background:none;border:none;font-size:1.6rem;cursor:pointer" id="closeM">×</button>
+          </div>
+          ${textFields.map(f => `
+            <div class="field"><label>${f}</label><input class="input" name="${f}" value="${(p[f]||'').replace(/"/g,'&quot;')}" ${f==='id'&&editing?'readonly':'required'} /></div>
+          `).join('')}
+          <div class="field"><label>state</label>
+            <select class="input" name="stateSlug" required>
+              <option value="">— Select state —</option>${stateOpts}
+            </select>
+          </div>
+          <div class="field"><label>category</label>
+            <select class="input" name="category" required>
+              <option value="">— Auto-detect from name/description —</option>${catOpts}
+            </select>
+            <small style="color:var(--muted-ink);font-size:.75rem">Leave blank to auto-categorise based on the place name & description.</small>
+          </div>
+          <div class="field"><label>description</label><textarea class="input" name="description" rows="3" required style="border-radius:10px">${p.description||''}</textarea></div>
+          <button class="btn btn-primary" style="width:100%" type="submit">Save Place</button>
+        </form>`;
+      m.querySelector('#closeM').onclick = () => { m.style.display = 'none'; };
+      m.onclick = (ev) => { if (ev.target === m) m.style.display = 'none'; };
+      m.querySelector('#placeForm').onsubmit = async (ev) => {
+        ev.preventDefault();
+        const data = Object.fromEntries(new FormData(ev.target).entries());
+        try {
+          if (editing) await tb.api('/api/places/' + editing.id, { method: 'PUT', body: JSON.stringify(data) });
+          else await tb.api('/api/places', { method: 'POST', body: JSON.stringify(data) });
+          tb.toast('Saved');
+          m.style.display = 'none';
+          loadPlaces();
+        } catch (err) { tb.toast(err.message, 'error'); }
+      };
+    }
+    window.openModal = openModal;
+  </script>
+</body>
+</html>

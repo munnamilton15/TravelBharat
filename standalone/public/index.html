@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>TravelBharat — Discover Incredible India</title>
+  <meta name="description" content="Explore India's 28 states. Search destinations, plan routes, find heritage sites, festivals and more." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <header></header>
+
+  <!-- HERO -->
+  <section class="hero" id="hero">
+    <div class="hero-slide active" style="background-image:url('https://upload.wikimedia.org/wikipedia/commons/thumb/b/bd/Taj_Mahal%2C_Agra%2C_India_edit3.jpg/1920px-Taj_Mahal%2C_Agra%2C_India_edit3.jpg')"></div>
+    <div class="hero-slide" style="background-image:url('https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/Jaisalmer_at_dusk.jpg/1920px-Jaisalmer_at_dusk.jpg')"></div>
+    <div class="hero-slide" style="background-image:url('https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/Kerala_backwaters.jpg/1920px-Kerala_backwaters.jpg')"></div>
+    <div class="hero-content">
+      <div class="hero-eyebrow">Incredible India · 28 States</div>
+      <h1>Where every journey<br/>becomes a <em>story</em></h1>
+      <p>From snow-capped Himalayas to sunlit beaches — discover, search and plan your perfect route across India.</p>
+      <div class="hero-actions">
+        <a href="#search" class="btn btn-primary">Start Planning →</a>
+        <a href="#states" class="btn btn-outline" style="color:#fff;border-color:#fff">Browse States</a>
+      </div>
+    </div>
+    <div class="hero-dots" id="heroDots"></div>
+  </section>
+
+  <!-- SEARCH & ROUTE PLANNER -->
+  <section id="search" class="container">
+    <div class="section-head">
+      <div class="eyebrow">Find & Plan</div>
+      <h2>Search places & <em>plan your route</em></h2>
+      <p>Find any destination in India or chart a journey with nearby gems along the way.</p>
+    </div>
+
+    <div class="find-grid">
+      <div class="panel">
+        <h3>🔍 Search Places</h3>
+        <div class="sub">Search by name, city, state, or category. Live data from MongoDB.</div>
+        <input id="searchInput" class="input" type="text" placeholder="Try 'Taj Mahal', 'Goa', 'beach'…" />
+        <div class="search-results" id="searchResults">
+          <div class="empty-hint">Start typing to discover destinations across India.</div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3>🗺️ Plan Your Route</h3>
+        <div class="sub">Source → Destination with map & nearby stops.</div>
+        <form id="routeForm">
+          <div class="field"><label>From</label><input class="input" id="origin" required placeholder="e.g. Delhi" /></div>
+          <div class="field"><label>To</label><input class="input" id="destination" required placeholder="e.g. Agra, Taj Mahal" /></div>
+          <button type="submit" class="btn btn-primary" style="width:100%">Show Route 🚗</button>
+        </form>
+      </div>
+    </div>
+
+    <div id="routeResult" class="route-result" style="display:none"></div>
+  </section>
+
+  <!-- STATES -->
+  <section id="states" class="container">
+    <div class="section-head">
+      <div class="eyebrow">28 States · 8 Union Territories</div>
+      <h2>Explore <em>India by state</em></h2>
+      <p>Click any state to see its story and top destinations.</p>
+    </div>
+    <div class="grid" id="statesGrid"></div>
+  </section>
+
+  <!-- CATEGORIES -->
+  <section id="categories" class="container">
+    <div class="section-head">
+      <div class="eyebrow">By Interest</div>
+      <h2>Travel by <em>category</em></h2>
+    </div>
+    <div class="grid" id="categoriesGrid"></div>
+  </section>
+
+  <!-- FESTIVALS -->
+  <section id="festivals" class="container">
+    <div class="section-head">
+      <div class="eyebrow">Cultural Calendar</div>
+      <h2>Festivals of <em>India</em></h2>
+    </div>
+    <div class="fest-grid" id="festivalsGrid"></div>
+  </section>
+
+  <!-- COMMUNITY -->
+  <section id="community" class="container">
+    <div class="section-head">
+      <div class="eyebrow">Voices of Travellers</div>
+      <h2>Share your <em>experience</em></h2>
+      <p>Tell others about your favourite trip. Stored in MongoDB, moderated by admins.</p>
+    </div>
+    <form id="expForm" class="exp-form">
+      <div class="field"><label>Your name</label><input class="input" id="expName" required /></div>
+      <div class="field"><label>Image URL (optional)</label><input class="input" id="expImg" placeholder="https://…" /></div>
+      <div class="field"><label>Your story</label><textarea id="expContent" rows="3" required placeholder="What made the trip special?"></textarea></div>
+      <button class="btn btn-primary" type="submit">Post Experience</button>
+    </form>
+    <div class="exp-list" id="expList"></div>
+  </section>
+
+  <script src="/js/app.js"></script>
+  <script src="/js/home.js"></script>
+</body>
+</html>

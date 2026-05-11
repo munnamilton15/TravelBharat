@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>State · TravelBharat</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <header></header>
+  <div class="page-hero" id="stateHero">
+    <div class="ph-inner">
+      <a class="back-link" href="/">← Back to Home</a>
+      <div class="eyebrow" style="color:var(--gold)" id="stateRegion"></div>
+      <h1 id="stateName">…</h1>
+      <p style="max-width:680px;margin-top:8px;opacity:.95" id="stateDesc"></p>
+    </div>
+  </div>
+  <section class="container">
+    <div style="max-width:780px"><p id="stateLong" style="color:var(--muted-ink);font-size:1.05rem"></p></div>
+    <div style="margin-top:40px">
+      <div class="eyebrow">Top Destinations</div>
+      <h2 class="display" style="font-size:2rem;margin-bottom:24px">Places to Visit</h2>
+      <div class="grid" id="placesGrid"></div>
+    </div>
+  </section>
+  <script src="/js/app.js"></script>
+  <script>
+    tb.renderNavbar('header'); tb.renderFooter('body');
+    (async () => {
+      const slug = tb.qs('slug');
+      if (!slug) return location.href = '/';
+      const s = await tb.api(`/api/states/${slug}`);
+      document.title = `${s.name} · TravelBharat`;
+      document.getElementById('stateHero').style.backgroundImage = `url('${s.image}')`;
+      document.getElementById('stateRegion').textContent = `${s.region} India · Capital: ${s.capital}`;
+      document.getElementById('stateName').textContent = s.name;
+      document.getElementById('stateDesc').textContent = s.description;
+      document.getElementById('stateLong').textContent = s.longDescription;
+      const places = await tb.api(`/api/places?state=${slug}`);
+      const grid = document.getElementById('placesGrid');
+      if (!places.length) {
+        grid.innerHTML = '<div class="empty-hint">No places yet for this state. Add via /admin.</div>';
+        return;
+      }
+      places.forEach((p) => {
+        grid.appendChild(tb.el('a', { class: 'card', href: `/place.html?id=${p.id}` },
+          tb.el('div', { class: 'card-img' }, tb.el('img', { src: p.image, alt: p.name, loading: 'lazy' })),
+          tb.el('div', { class: 'card-body' },
+            tb.el('h3', {}, p.name),
+            tb.el('div', { class: 'meta' }, `📍 ${p.city} · ${p.category}`),
+            tb.el('p', {}, p.description)
+          )
+        ));
+      });
+    })().catch(e => tb.toast(e.message, 'error'));
+  </script>
+</body>
+</html>
